@@ -8,6 +8,8 @@
 
 import Foundation
 import UIKit
+import UserNotifications
+import RealtimeMessaging_iOS_Swift3
 
 /**
  * OrtcClientPushNotificationsDelegate process custom push notification with payload
@@ -36,15 +38,21 @@ extension UIResponder: OrtcClientPushNotificationsDelegate{
         NotificationCenter.default.addObserver(self.self, selector: #selector(UIResponder.registForNotifications), name: NSNotification.Name.UIApplicationDidFinishLaunching, object: nil)
     }
     
-    @available(iOS, deprecated: 1.0, message: "For iOS older versions")
     static func registForNotifications() -> Bool {
-        if UIApplication.shared.responds(to: #selector(UIApplication.registerUserNotificationSettings(_:))) {
-            let settings: UIUserNotificationSettings = UIUserNotificationSettings(types:[.alert, .badge, .sound], categories: nil)
-            UIApplication.shared.registerUserNotificationSettings(settings)
+        if #available(iOS 10.0, *) {
+            let center = UNUserNotificationCenter.current()
+            center.requestAuthorization(options: [.alert, .sound]) { (granted, error) in
+                // actions based on whether notifications were authorized or not
+            }
             UIApplication.shared.registerForRemoteNotifications()
-        }
-        else {
-            UIApplication.shared.registerForRemoteNotifications(matching: [.sound, .alert, .badge])
+        }else{
+            if UIApplication.shared.responds(to: #selector(UIApplication.registerUserNotificationSettings(_:))) {
+                let settings: UIUserNotificationSettings = UIUserNotificationSettings(types:[.alert, .badge, .sound], categories: nil)
+                UIApplication.shared.registerUserNotificationSettings(settings)
+                UIApplication.shared.registerForRemoteNotifications()
+            }else {
+                UIApplication.shared.registerForRemoteNotifications(matching: [.sound, .alert, .badge])
+            }
         }
         return true
     }
@@ -63,8 +71,10 @@ extension UIResponder: OrtcClientPushNotificationsDelegate{
     }
     
     func application(_ application: UIApplication, didReceiveRemoteNotification userInfo: [AnyHashable: Any]) {
+        let NOTIFICATIONS_KEY = "Local_Storage_Notifications"
+        
         if (userInfo["C"] as? NSString) != nil && (userInfo["M"] as? NSString) != nil && (userInfo["A"] as? NSString) != nil {
-            var t:NSDictionary? = (userInfo["aps"] as? NSDictionary)
+
             if (((userInfo["aps"] as? NSDictionary)?["alert"]) is String) {
                 let ortcMessage: String = "a[\"{\\\"ch\\\":\\\"\(userInfo["C"] as! String)\\\",\\\"m\\\":\\\"\(userInfo["M"] as! String)\\\"}\"]"
                 
@@ -92,8 +102,8 @@ extension UIResponder: OrtcClientPushNotificationsDelegate{
                 UserDefaults.standard.synchronize()
                 NotificationCenter.default.post(name: Notification.Name(rawValue: "ApnsNotification"), object: nil, userInfo: userInfo)
             }
-            else if((UIApplication.shared.delegate?.responds(to: "onPushNotifications:message:payload:")) != nil){
-                (UIApplication.shared.delegate as! UIResponder).onPushNotificationWithPayload(userInfo["C"] as! String,
+            else if((UIApplication.shared.delegate?.responds(to: #selector(onPushNotificationWithPayload(_:message:payload:)))) != nil){
+                (UIApplication.shared.delegate as! OrtcClientPushNotificationsDelegate).onPushNotificationWithPayload(userInfo["C"] as! String,
                     message: userInfo["M"] as! String,
                     payload: userInfo["aps"] as? NSDictionary)
             }

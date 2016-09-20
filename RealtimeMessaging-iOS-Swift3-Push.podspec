@@ -27,5 +27,4 @@ Pod::Spec.new do |s|
   s.requires_arc = true
   s.source_files = 'Pod/Classes/**/*'
   s.dependency 'RealtimeMessaging-iOS-Swift3', '1.0.0'
-  s.dependency 'Starscream', '1.1.5'
 end
