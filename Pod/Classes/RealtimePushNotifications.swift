@@ -57,7 +57,7 @@ extension UIResponder: OrtcClientPushNotificationsDelegate{
         return true
     }
     
-    func application(_ application: UIApplication, didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data) {
+    public func application(_ application: UIApplication, didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data) {
         var newToken: String = (deviceToken as NSData).description
         newToken = newToken.trimmingCharacters(in: CharacterSet(charactersIn: "<>"))
         newToken = newToken.replacingOccurrences(of: " ", with: "")
@@ -65,12 +65,12 @@ extension UIResponder: OrtcClientPushNotificationsDelegate{
         OrtcClient.setDEVICE_TOKEN(newToken)
     }
     
-    func application(_ application: UIApplication, didReceiveRemoteNotification userInfo: [AnyHashable: Any], fetchCompletionHandler completionHandler: (UIBackgroundFetchResult) -> Void){
+    public func application(_ application: UIApplication, didReceiveRemoteNotification userInfo: [AnyHashable: Any], fetchCompletionHandler completionHandler: (UIBackgroundFetchResult) -> Void){
         completionHandler(UIBackgroundFetchResult.newData)
         self.application(application, didReceiveRemoteNotification: userInfo)
     }
     
-    func application(_ application: UIApplication, didReceiveRemoteNotification userInfo: [AnyHashable: Any]) {
+    public func application(_ application: UIApplication, didReceiveRemoteNotification userInfo: [AnyHashable: Any]) {
         let NOTIFICATIONS_KEY = "Local_Storage_Notifications"
         
         if (userInfo["C"] as? NSString) != nil && (userInfo["M"] as? NSString) != nil && (userInfo["A"] as? NSString) != nil {
@@ -110,7 +110,7 @@ extension UIResponder: OrtcClientPushNotificationsDelegate{
         }
     }
     
-    func application(_ application: UIApplication, didFailToRegisterForRemoteNotificationsWithError error: NSError) {
+    public func application(_ application: UIApplication, didFailToRegisterForRemoteNotificationsWithError error: NSError) {
         NSLog("Failed to register with error : %@", error)
         NotificationCenter.default.post(name: Notification.Name(rawValue: "ApnsRegisterError"), object: nil, userInfo: [
             "ApnsRegisterError" : error
@@ -125,7 +125,7 @@ extension UIResponder: OrtcClientPushNotificationsDelegate{
      * - parameter message: the remote notification title
      * - parameter payload: a dictionary containig the payload data
      */
-    open func onPushNotificationWithPayload(_ channel:String, message:String, payload:NSDictionary?){
+    public func onPushNotificationWithPayload(_ channel:String, message:String, payload:NSDictionary?){
             preconditionFailure("Must override onPushNotificationWithPayload method on AppDelegate")
     }
 
