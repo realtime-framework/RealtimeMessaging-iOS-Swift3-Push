@@ -41,7 +41,7 @@ extension UIResponder: OrtcClientPushNotificationsDelegate{
     static func registForNotifications() -> Bool {
         if #available(iOS 10.0, *) {
             let center = UNUserNotificationCenter.current()
-            center.requestAuthorization(options: [.alert, .sound]) { (granted, error) in
+            center.requestAuthorization(options: [.alert, .sound, .badge]) { (granted, error) in
                 // actions based on whether notifications were authorized or not
             }
             UIApplication.shared.registerForRemoteNotifications()
