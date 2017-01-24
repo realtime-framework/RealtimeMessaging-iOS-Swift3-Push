@@ -76,7 +76,37 @@ extension UIResponder: OrtcClientPushNotificationsDelegate{
         if (userInfo["C"] as? NSString) != nil && (userInfo["M"] as? NSString) != nil && (userInfo["A"] as? NSString) != nil {
 
             if (((userInfo["aps"] as? NSDictionary)?["alert"]) is String) {
-                let ortcMessage: String = "a[\"{\\\"ch\\\":\\\"\(userInfo["C"] as! String)\\\",\\\"m\\\":\\\"\(userInfo["M"] as! String)\\\"}\"]"
+                
+                var recRegex: NSRegularExpression?
+                
+                do{
+                    recRegex = try NSRegularExpression(pattern: "^#(.*?):", options:NSRegularExpression.Options.caseInsensitive)
+                }catch{
+                    
+                }
+                
+                let recMatch: NSTextCheckingResult? = recRegex?.firstMatch(in: userInfo["M"] as! String, options: NSRegularExpression.MatchingOptions.reportProgress, range: NSMakeRange(0, (userInfo["M"] as! NSString).length))
+                
+                var strRangeSeqId: NSRange?
+                if recMatch != nil{
+                    strRangeSeqId = recMatch!.rangeAt(1)
+                }
+                var seqId:NSString?
+                var message:NSString?
+                if (recMatch != nil && strRangeSeqId?.location != NSNotFound) {
+                    seqId = (userInfo["M"] as! NSString).substring(with: strRangeSeqId!) as NSString
+                    let parts:[String] = (userInfo["M"] as! NSString).components(separatedBy: "#\(seqId!):")
+                    message = parts[1] as NSString
+                }
+                
+                var ortcMessage: String
+                if seqId != nil && seqId != ""  {
+                    ortcMessage = "a[\"{\\\"ch\\\":\\\"\(userInfo["C"] as! String)\\\",\\\"s\\\":\\\"\(seqId! as! String)\\\",\\\"m\\\":\\\"\(message! as! String)\\\"}\"]"
+                }else{
+                    ortcMessage = "a[\"{\\\"ch\\\":\\\"\(userInfo["C"] as! String)\\\",\\\"m\\\":\\\"\(userInfo["M"] as! String)\\\"}\"]"
+                }
+                
+                
                 
                 var notificationsDict: NSMutableDictionary?
                 if UserDefaults.standard.object(forKey: NOTIFICATIONS_KEY) != nil{
@@ -86,20 +116,21 @@ extension UIResponder: OrtcClientPushNotificationsDelegate{
                     notificationsDict = NSMutableDictionary()
                 }
                 
-                var notificationsArray: NSMutableArray?
+                var notificationsArray: NSMutableDictionary?
                 
                 if notificationsDict?.object(forKey: userInfo["A"] as! String) != nil{
-                    notificationsArray = NSMutableArray(array: notificationsDict?.object(forKey: userInfo["A"] as! String) as! NSArray)
+                    notificationsArray = NSMutableDictionary(dictionary: notificationsDict?.object(forKey: userInfo["A"] as! String) as! NSMutableDictionary)
                 }
                 
                 if notificationsArray == nil{
-                    notificationsArray = NSMutableArray()
+                    notificationsArray = NSMutableDictionary()
                 }
                 
-                notificationsArray!.add(ortcMessage)
+                notificationsArray!.setObject(false, forKey: ortcMessage as NSCopying)
                 notificationsDict!.setObject(notificationsArray!, forKey: (userInfo["A"] as! String as NSCopying))
                 UserDefaults.standard.set(notificationsDict!, forKey: NOTIFICATIONS_KEY)
                 UserDefaults.standard.synchronize()
+                
                 NotificationCenter.default.post(name: Notification.Name(rawValue: "ApnsNotification"), object: nil, userInfo: userInfo)
             }
             else if((UIApplication.shared.delegate?.responds(to: #selector(onPushNotificationWithPayload(_:message:payload:)))) != nil){
