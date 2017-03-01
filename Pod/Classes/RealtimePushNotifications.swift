@@ -38,7 +38,7 @@ extension UIResponder: OrtcClientPushNotificationsDelegate{
         NotificationCenter.default.addObserver(self.self, selector: #selector(UIResponder.registForNotifications), name: NSNotification.Name.UIApplicationDidFinishLaunching, object: nil)
     }
     
-    static func registForNotifications() -> Bool {
+    open static func registForNotifications() -> Bool {
         if #available(iOS 10.0, *) {
             let center = UNUserNotificationCenter.current()
             center.requestAuthorization(options: [.alert, .sound, .badge]) { (granted, error) in
