@@ -8,7 +8,7 @@
 
 Pod::Spec.new do |s|
   s.name             = "RealtimeMessaging-iOS-Swift3-Push"
-  s.version          = "1.0.14"
+  s.version          = "1.0.12"
   s.summary          = "Swift3 Realtime Cloud Messaging (ORTC) SDK for iOS with push notifications catgory"
 
   s.description      = <<-DESC
@@ -24,8 +24,6 @@ Pod::Spec.new do |s|
   s.social_media_url = 'https://twitter.com/RTWworld'
 
   s.platform     = :ios, '8.0'
-  s.platform     = :tvos, '9.0'
-
   s.requires_arc = true
   s.source_files = 'Pod/Classes/**/*'
   s.dependency 'RealtimeMessaging-iOS-Swift3', '1.0.2'
