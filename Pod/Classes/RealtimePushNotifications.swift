@@ -39,21 +39,36 @@ extension UIResponder: OrtcClientPushNotificationsDelegate{
     }
     
     open static func registForNotifications() -> Bool {
-        if #available(iOS 10.0, *) {
-            let center = UNUserNotificationCenter.current()
-            center.requestAuthorization(options: [.alert, .sound, .badge]) { (granted, error) in
-                // actions based on whether notifications were authorized or not
-            }
-            UIApplication.shared.registerForRemoteNotifications()
-        }else{
-            if UIApplication.shared.responds(to: #selector(UIApplication.registerUserNotificationSettings(_:))) {
-                let settings: UIUserNotificationSettings = UIUserNotificationSettings(types:[.alert, .badge, .sound], categories: nil)
-                UIApplication.shared.registerUserNotificationSettings(settings)
+        
+        #if os(iOS)
+            if #available(iOS 10.0, *) {
+                let center = UNUserNotificationCenter.current()
+                center.requestAuthorization(options: [.alert, .sound, .badge]) { (granted, error) in
+                    // actions based on whether notifications were authorized or not
+                }
                 UIApplication.shared.registerForRemoteNotifications()
-            }else {
-                UIApplication.shared.registerForRemoteNotifications(matching: [.sound, .alert, .badge])
+            }else{
+                if UIApplication.shared.responds(to: #selector(UIApplication.registerUserNotificationSettings(_:))) {
+                    let settings: UIUserNotificationSettings = UIUserNotificationSettings(types:[.alert, .badge, .sound], categories: nil)
+                    UIApplication.shared.registerUserNotificationSettings(settings)
+                    UIApplication.shared.registerForRemoteNotifications()
+                }else {
+                    UIApplication.shared.registerForRemoteNotifications(matching: [.sound, .alert, .badge])
+                }
             }
-        }
+
+        #endif
+        
+        #if os(tvOS)
+            if #available(tvOS 10.0, *) {
+                let center = UNUserNotificationCenter.current()
+                center.requestAuthorization(options: [.alert, .sound, .badge]) { (granted, error) in
+                    // actions based on whether notifications were authorized or not
+                }
+                UIApplication.shared.registerForRemoteNotifications()
+            }
+        #endif
+        
         return true
     }
     
